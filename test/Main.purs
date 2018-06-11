@@ -4,7 +4,7 @@ import Prelude
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
-import Data.List (length)
+import Data.List (length, manyRec)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Validation.Semigroup (unV)
 import Node.Commando (Opt(Opt))
@@ -20,8 +20,9 @@ configRec =
   }
 
 optOne :: Optlicative Config
-optOne = (\ output help -> ConfigOne {output, help})
+optOne = (\ output names help -> ConfigOne {output, names, help})
   <$> string "output" Nothing
+  <*> manyRec (string "name" Nothing)
   <*> flag "help" (Just 'h')
 
 optTwo :: Optlicative Config
@@ -44,9 +45,10 @@ myPrefs = defaultPreferences {globalOpts = globalConfig}
 -- | 3. `pulp test -- one --output blah`
 -- | 4. `pulp test -- one two`
 -- | 5. `pulp test -- one two --help`
--- | 5. `pulp test -- --version`
--- | 6. `pulp test -- --version --say doh`
--- | 7. `pulp test`
+-- | 6. `pulp test -- one --name "Parnell" --name "Stephanie"
+-- | 7. `pulp test -- --version`
+-- | 8. `pulp test -- --version --say doh`
+-- | 9. `pulp test`
 main :: forall e. Eff (process :: PROCESS, console :: CONSOLE | e) Unit
 main = do
   {cmd, value} <- optlicate configRec myPrefs

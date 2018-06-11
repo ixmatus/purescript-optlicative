@@ -193,4 +193,4 @@ optlicate
   => Record optrow
   -> Preferences a
   -> Eff (process :: PROCESS | e) {cmd :: Maybe String, value :: Value a}
-optlicate rec prefs = parse rec prefs <$> argv 
+optlicate rec prefs = parse rec prefs <$> argv

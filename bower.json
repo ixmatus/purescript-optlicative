@@ -25,7 +25,7 @@
     "tests"
   ],
   "dependencies": {
-    "purescript-validation": "^3.2.0",
+    "purescript-validation": "git@github.com:ixmatus/purescript-validation.git#c12edc8428172ef30fd629056a2a6814ba1ab328",
     "purescript-record": "^0.2.6",
     "purescript-typelevel-prelude": "^2.6.0",
     "purescript-symbols": "^3.0.0",
