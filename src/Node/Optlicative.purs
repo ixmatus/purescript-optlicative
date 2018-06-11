@@ -9,6 +9,7 @@ module Node.Optlicative
   , withDefaultM
   , optF
   , optForeign
+  , many
   , manyF
   , optlicate
   , defaultPreferences
