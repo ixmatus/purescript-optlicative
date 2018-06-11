@@ -2,7 +2,6 @@ module Node.Optlicative.Types where
 
 import Prelude
 
-import Control.Monad.Rec.Class (class MonadRec, Step(..))
 import Control.Alt (class Alt)
 import Control.Alternative (class Alternative)
 import Control.Plus (class Plus)
@@ -11,51 +10,11 @@ import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype)
 import Data.Validation.Semigroup (V(..), isValid, invalid)
 
-newtype Optlicative a = Optlicative (OptState -> { state :: OptState, val :: V (List OptError) a })
+newtype Optlicative a = Optlicative (OptState -> Result a)
 
 derive instance newtypeOptlicative :: Newtype (Optlicative a) _
 
 derive instance functorOptlicative :: Functor Optlicative
-
--- TODO: figure out why my type annotations make the compiler think
--- the explicit forall type variables are not general enough
-instance monadRecOptlicative :: MonadRec Optlicative where
-    --tailRecM :: forall a b. (a -> Optlicative (Step a b)) -> a -> Optlicative b
-    tailRecM f init = Optlicative \optstate -> tailRec (f init) optstate 
-      where
-        --tailRec :: forall a b. Optlicative (Step a b) -> OptState -> Result b
-        tailRec p@(Optlicative o) optstate = loop (go (o optstate))
-          where
-            --loop :: forall a b. Step (Result a) (Result b) -> Result b
-            loop (Done r) = r
-            loop (Loop { state, val }) =
-              case val of
-                Invalid e   -> { state, val: invalid e}
-                Valid value -> 
-                  let
-                    (Optlicative a1) = f value
-                  in
-                    loop (go (a1 state))
-
-            go :: forall a b. Result (Step a b) -> Step (Result a) (Result b)
-            go { state, val } = case val of
-              Invalid e      -> Done { state, val: invalid e }
-              Valid (Loop v) -> Loop { state, val: Valid v }
-              Valid (Done v) -> Done { state, val: Valid v }
-
-instance bindOptlicative :: Bind Optlicative where
-  bind (Optlicative f) g = Optlicative \s -> 
-    let
-      { state, val } = f s
-    in case val of
-         Invalid e -> { state, val: invalid e}
-         Valid v   -> 
-           let
-             (Optlicative b) = g v
-           in
-             b state
-
-instance monadOptlicative :: Monad Optlicative
 
 instance applyOptlicative :: Apply Optlicative where
   apply (Optlicative f) (Optlicative a) = Optlicative \ s ->

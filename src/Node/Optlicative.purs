@@ -26,12 +26,12 @@ import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foreign (F, Foreign, toForeign)
 import Data.Int (fromNumber)
-import Data.List (List)
+import Data.List (List(..), (:))
 import Data.List as List
 import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid, mempty)
 import Data.Traversable (traverse)
-import Data.Validation.Semigroup (invalid, isValid)
+import Data.Validation.Semigroup (V(..), invalid, isValid)
 import Global (isNaN, readFloat)
 import Node.Commando (class Commando)
 import Node.Commando (class Commando, commando, Opt(..), endOpt) as Exports
@@ -117,6 +117,17 @@ optional :: forall a. Optlicative a -> Optlicative (Maybe a)
 optional (Optlicative o) = Optlicative \ s ->
   let {state, val} = o s
   in  {state, val: if isValid val then Just <$> val else pure Nothing}
+
+many :: forall a. Optlicative a -> Optlicative (List a)
+many parser = Optlicative \optstate -> go parser optstate Nil
+  where
+    go (Optlicative o) s acc =
+      let
+        { state, val } = o s
+      in 
+        case val of
+           Invalid _ -> { state, val: pure (List.reverse acc) }
+           Valid v   -> go parser state (v:acc)
 
 -- | Instead of failing, turns an optlicative parser into one that always succeeds
 -- | but may do so with the given default argument if no such option is found.

@@ -4,11 +4,11 @@ import Prelude
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
-import Data.List (length, manyRec)
+import Data.List (length)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Validation.Semigroup (unV)
 import Node.Commando (Opt(Opt))
-import Node.Optlicative (Optlicative, Preferences, defaultPreferences, flag, logErrors, optlicate, string)
+import Node.Optlicative (Optlicative, Preferences, defaultPreferences, flag, logErrors, optlicate, string, many)
 import Node.Process (PROCESS)
 import Test.Types (Config(..), ConfigRec, showConfig)
 
@@ -22,7 +22,7 @@ configRec =
 optOne :: Optlicative Config
 optOne = (\ output names help -> ConfigOne {output, names, help})
   <$> string "output" Nothing
-  <*> manyRec (string "name" Nothing)
+  <*> many (string "name" Nothing)
   <*> flag "help" (Just 'h')
 
 optTwo :: Optlicative Config
